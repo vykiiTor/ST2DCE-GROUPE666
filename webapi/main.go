@@ -20,7 +20,7 @@ func main() {
 func whoAmI(response http.ResponseWriter, r *http.Request) {
 	who := []whoami{
 		whoami{Name: "Team 666",
-			Title: "DevOps and Continous Deployment",
+			Title: "DevOps and Continous Deployment project with the best team",
 			State: "FR",
 		},
 	}
@@ -38,7 +38,7 @@ func homePage(response http.ResponseWriter, r *http.Request) {
 func aboutMe(response http.ResponseWriter, r *http.Request) {
 	who := "EfreiParis"
 
-	fmt.Fprintf(response, "A little bit about me...")
+	fmt.Fprintf(response, "A little bit about HUGOD the conqueror")
 	fmt.Println("Endpoint Hit: ", who)
 }
 
