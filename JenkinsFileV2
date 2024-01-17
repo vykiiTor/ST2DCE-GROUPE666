@@ -1,0 +1,39 @@
+pipeline {
+    agent {
+        label 'jenkins-slave'
+    }
+
+    stages {
+        stage('Clone git') {
+            steps {
+                // Checkout the code from the Git repository, url : https://github.com/vykiiTor/ST2DCE-GROUPE666.git
+                git url: 'https://github.com/vykiiTor/ST2DCE-GROUPE666.git', branch: 'main'
+            }
+        }
+        stage('Build') {
+            steps {
+                dir("${env.workspace}") {
+                    // Build the Docker image
+                    sh 'docker build -t my-go-app:latest .'
+                }
+            }
+        }
+
+        stage('start mini kube') {
+            steps {
+                sh 'minikube start'
+                sh 'minikube image load my-go-app:latest'
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                dir("${env.workspace}") {
+                    // Run the Docker container
+                    sh 'kubectl apply -f go-app-deployement.yml'
+                    sh 'minikube tunnel'
+                }
+            }
+        }
+    }
+}
