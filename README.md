@@ -2,7 +2,7 @@
 GROUPE 666
 
 
-# Etapes a faire :
+# Etapes a faire question 2 etape 1 :
 - Avec docker faire un container jenkins (image jenkins/jenkins et cmd docker run -p 8089:8080 jenkins/jenkins
 - faire une pipeline et config le pipeline script avec le jenkinsFile fournis
 - faire un agent avec le meme nom que celui dans le jenkinsFile
