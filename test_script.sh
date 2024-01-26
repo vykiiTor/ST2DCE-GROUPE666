@@ -1,7 +1,8 @@
 #!/bin/bash
 
 # Define the base URL of your Go app
-BASE_URL="http://localhost:8090"
+BASE_URL=$(<$(dirname "$0")/url.txt)
+echo $BASE_URL
 
 # Variable to track the overall test status
 TEST_STATUS=0
@@ -41,7 +42,7 @@ test_endpoint() {
 # Test each endpoint
 test_endpoint "/" 200 "Welcome to the Web API!"
 test_endpoint "/aboutme" 200 "A little bit about HUGOD the conqueror"
-test_endpoint "/whoami" 200 '{"Name":"Team 666","Title":"DevOps and Continous Deployment project with the best team","State":"FR"}'
+test_endpoint "/whoami" 200 '[{"Name":"Team 666","Title":"DevOps and Continous Deployment project with the best team","State":"FR"}]'
 
 # Exit with the overall test status
 exit $TEST_STATUS
