@@ -70,4 +70,11 @@ pipeline {
             }
         }
     }
+    post {
+        always {
+            sh 'kubectl config set-context --current --namespace=default'
+            sh "kubectl delete namespace ${DEVELOPMENT_NAMESPACE} --ignore-not-found"
+            sh "kubectl delete namespace ${PRODUCTION_NAMESPACE} --ignore-not-found"
+        }
+    }
 }
