@@ -16,12 +16,19 @@ pipeline {
             }
         }
 
-        stage('Start minikube and load the image (Development)') {
+        stage('Start and clear minikube env') {
+            steps {
+                sh 'minikube start'
+                sh 'kubectl config set-context --current --namespace=default'
+                sh 'kubectl delete deployment go-app --ignore-not-found'
+                sh "kubectl delete namespace ${DEVELOPMENT_NAMESPACE} --ignore-not-found"
+                sh "kubectl delete namespace ${PRODUCTION_NAMESPACE} --ignore-not-found"
+            }
+        }
+
+        stage('Build and load the image (Development)') {
             steps {
                 dir("${env.workspace}/webapi") {
-                    // Start Minikube
-                    sh 'minikube start'
-
                     // Build the Docker image using buildpack
                     sh 'pack build go-app:latest --builder=gcr.io/buildpacks/builder:v1'
 
@@ -70,6 +77,7 @@ pipeline {
             }
         }
     }
+    
     post {
         always {
             sh 'kubectl config set-context --current --namespace=default'
