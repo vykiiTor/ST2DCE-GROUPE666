@@ -1,0 +1,73 @@
+pipeline {
+    agent {
+        label 'jenkins-slave'
+    }
+
+    environment {
+        DEVELOPMENT_NAMESPACE = 'development'
+        PRODUCTION_NAMESPACE = 'production'
+    }
+
+    stages {
+        stage('Clone git') {
+            steps {
+                // Checkout the code from the Git repository, url : https://github.com/vykiiTor/ST2DCE-GROUPE666.git
+                git url: 'https://github.com/vykiiTor/ST2DCE-GROUPE666.git', branch: 'main'
+            }
+        }
+
+        stage('Start minikube and load the image (Development)') {
+            steps {
+                dir("${env.workspace}") {
+                    // Start Minikube
+                    sh 'minikube start'
+
+                    // Build the Docker image using buildpack
+                    sh 'pack build go-app:latest --builder=gcr.io/buildpacks/builder:v1'
+
+                    // Load the Docker image into Minikube
+                    sh 'minikube image load go-app:latest'
+                }
+            }
+        }
+
+        stage('Deploy to Development Namespace') {
+            steps {
+                dir("${env.workspace}") {
+                    sh "kubectl create namespace ${DEVELOPMENT_NAMESPACE}"
+                    sh "kubectl config set-context --current --namespace=${DEVELOPMENT_NAMESPACE}"
+                    sh 'kubectl apply -f go-app-deployment.yml'
+                    sh 'minikube service go-app --url > url.txt'
+                }
+            }
+        }
+
+        stage('Test') {
+            steps {
+                dir("${env.workspace}") {
+                    sh 'chmod +x ./test_script.sh'
+                    script {
+                        def testResult = sh(script: './test_script.sh', returnStatus: true)
+                        if (testResult != 0) {
+                            currentBuild.result = 'FAILURE'
+                            error('Tests failed. Aborting deployment to production.')
+                        }
+                    }
+                }
+            }
+        }
+
+        stage('Deploy to Production Namespace') {
+            when {
+                expression { currentBuild.resultIsBetterOrEqualTo('SUCCESS') }
+            }
+            steps {
+                dir("${env.workspace}") {
+                    sh "kubectl create namespace ${PRODUCTION_NAMESPACE}"
+                    sh "kubectl config set-context --current --namespace=${PRODUCTION_NAMESPACE}"
+                    sh 'kubectl apply -f go-app-deployment.yml'
+                }
+            }
+        }
+    }
+}
