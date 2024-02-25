@@ -19,7 +19,6 @@ pipeline {
         stage('Start and clear minikube env') {
             steps {
                 sh 'minikube start'
-                sh 'kubectl config set-context --current --namespace=default'
                 sh 'kubectl delete deployment go-app --ignore-not-found'
                 sh "kubectl delete namespace ${DEVELOPMENT_NAMESPACE} --ignore-not-found"
                 sh "kubectl delete namespace ${PRODUCTION_NAMESPACE} --ignore-not-found"
@@ -42,8 +41,9 @@ pipeline {
             steps {
                 dir("${env.workspace}") {
                     sh "kubectl create namespace ${DEVELOPMENT_NAMESPACE}"
-                    sh "kubectl config set-context --current --namespace=${DEVELOPMENT_NAMESPACE}"
-                    sh 'kubectl apply -f go-app-deployment.yml'
+                    sh "kubectl apply -f go-app-deployment.yml -n ${DEVELOPMENT_NAMESPACE}"
+                    // wait for the deployment to be ready
+                    sh "kubectl wait --for=condition=available --timeout=600s deployment/go-app -n ${DEVELOPMENT_NAMESPACE}"
                     sh "minikube service go-app -n ${DEVELOPMENT_NAMESPACE} --url > url.txt"
                 }
             }
@@ -71,8 +71,7 @@ pipeline {
             steps {
                 dir("${env.workspace}") {
                     sh "kubectl create namespace ${PRODUCTION_NAMESPACE}"
-                    sh "kubectl config set-context --current --namespace=${PRODUCTION_NAMESPACE}"
-                    sh 'kubectl apply -f go-app-deployment.yml'
+                    sh "kubectl apply -f go-app-deployment-prod.yml -n ${PRODUCTION_NAMESPACE}"
                 }
             }
         }
@@ -80,7 +79,6 @@ pipeline {
     
     post {
         always {
-            sh 'kubectl config set-context --current --namespace=default'
             sh "kubectl delete namespace ${DEVELOPMENT_NAMESPACE} --ignore-not-found"
             sh "kubectl delete namespace ${PRODUCTION_NAMESPACE} --ignore-not-found"
         }
