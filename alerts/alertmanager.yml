@@ -1,6 +1,6 @@
-
-alertmanager:
-  config:
+apiVersion: v1
+data:
+  alertmanager.yml: |
     global:
       resolve_timeout: 1m
     route:
@@ -19,3 +19,19 @@ alertmanager:
         auth_password: '$smtp_pass'
         auth_identity: '$email'
         send_resolved: true
+kind: ConfigMap
+metadata:
+  annotations:
+    meta.helm.sh/release-name: alertmanager
+    meta.helm.sh/release-namespace: default
+  creationTimestamp: "2024-02-25T14:59:24Z"
+  labels:
+    app.kubernetes.io/instance: alertmanager
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: alertmanager
+    app.kubernetes.io/version: v0.26.0
+    helm.sh/chart: alertmanager-1.8.0
+  name: alertmanager
+  namespace: default
+  resourceVersion: "5947"
+  uid: 977969a4-98d1-45d5-86be-0b549816cea9
