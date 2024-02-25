@@ -44,7 +44,7 @@ pipeline {
                     sh "kubectl create namespace ${DEVELOPMENT_NAMESPACE}"
                     sh "kubectl config set-context --current --namespace=${DEVELOPMENT_NAMESPACE}"
                     sh 'kubectl apply -f go-app-deployment.yml'
-                    sh 'minikube service go-app --url > url.txt'
+                    sh "minikube service go-app -n ${DEVELOPMENT_NAMESPACE} --url > url.txt"
                 }
             }
         }
